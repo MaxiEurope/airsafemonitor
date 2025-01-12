@@ -1,6 +1,6 @@
 # airsafemonitor
 
-This is a raspberry pi-based air quality monitoring system that measures the temperature, humidity, and LPG gas levels using the DHT11 and MQ2 sensor, and LED indicators. The data is processed and sent to an API for real-time monitoring.
+This is a raspberry pi-based air quality monitoring system that measures the temperature, humidity, and LPG gas levels using the DHT11 and MQ2 sensor, and LED indicators. The data is processed and sent to an API or MQTT broker for real-time monitoring.
 
 ## features
 
@@ -96,9 +96,23 @@ pip3 install -r requirements.txt
 
 Note: using the circuitpython version as it is actively maintained and integrates better with modern raspberry pi's.
 
-### SPI
+### .env file
 
-Enable SPI on the raspberry pi. Interface options - SPI - enable.
+Create a `.env` file in the root directory with the following content:
+
+```sh
+API_URL=
+MQTT_TOPIC=
+MQTT_BROKER=
+MQTT_USERNAME=
+MQTT_PASSWORD=
+```
+
+Note that `akenza.io` has been used for this project, but you can use any other API or MQTT broker, or leave the fields empty if you only want to monitor the data locally.
+
+### SPI & Serial Port
+
+Enable SPI & Serial Port on the raspberry pi. `Interface options - SPI - enable` and `Interface options - Serial Port - disable login shell over serial`.
 
 ```sh
 sudo raspi-config
@@ -144,4 +158,12 @@ python tests/led.py
 
 - ensure the voltage divider circuit is correctly set up to avoid damaging the raspberry pi GPIO pins
 - the DHT11 sensor has a 2 second minimal interval for reading data
-- you can leave out the API part if you only want to monitor the data locally
+- you can leave out the API or MQTT part if you only want to monitor the data locally
+
+## images
+
+![dashboard_temperature_gas](img/dashboard_temperature_gas.png "image of the akenza.io temperature/gas dashboard")
+
+![dashboard_temperature_humidity](img/dashboard_temperature_humidity.png "image of the akenza.io temperature/humidity dashboard")
+
+![dashboard_ppm](img/dashboard_ppm.png "image of the akenza.io ppm dashboard")
