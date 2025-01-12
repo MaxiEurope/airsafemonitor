@@ -3,6 +3,8 @@ import math
 import threading
 import sys
 import signal
+import json
+import os
 
 import RPi.GPIO as GPIO
 import spidev
@@ -10,10 +12,20 @@ import spidev
 import board
 from adafruit_dht import DHT11
 
+from dotenv import load_dotenv
 import requests
+import paho.mqtt.client as mqtt
+
+load_dotenv()
 
 # config
-API_URL = "https://api.maxi-script.com/airsafe"
+API_URL = os.getenv("API_URL")
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = 8883 # TLS port
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
+
 API_INTERVAL = 5.0
 DHT_READ_INTERVAL = 2.0
 MQ2_READ_INTERVAL = 0.5
@@ -26,6 +38,24 @@ readings = {
 }
 
 stop_event = threading.Event()
+
+# mqtt connection
+mqtt_client = mqtt.Client()
+mqtt_client.tls_set()
+mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
+try:
+    mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
+    print("Connected to MQTT broker successfully.")
+except Exception as e:
+    print(f"Failed to connect to MQTT broker: {e}")
+
+def publish_to_mqtt(payload):
+    try:
+        mqtt_client.publish(MQTT_TOPIC, payload)
+        print("Published to MQTT:", payload)
+    except Exception as e:
+        print(f"Failed to publish to MQTT: {e}")
 
 # dht11 setup
 DHT_PIN = board.D5  # gpio 5
@@ -211,6 +241,13 @@ def api_thread_func():
             "humidity": hum,
             "lpg_ppm": lpg
         }
+
+        try:
+            payload_str = json.dumps(payload)
+            publish_to_mqtt(payload_str)
+        except Exception as e:
+            print(f"Error in MQTT publish: {e}")
+
         try:
             print(f"Sending data to API: {payload}")
             response = requests.post(API_URL, json=payload, timeout=5)
