@@ -1,3 +1,4 @@
 RPi.GPIO
 adafruit-circuitpython-dht
 spidev
+requests
