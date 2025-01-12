@@ -75,9 +75,18 @@ MCP3008 DOUT --- [560 Ω] ---+--- GPIO 9 (MISO)
                            GND
 ```
 
-## installation
+## setup
+
+### python & dependencies
 
 You need to have python3 installed on your system.
+
+```sh
+sudo apt update
+sudo apt install python3 python3-pip
+```
+
+Set up a python virtual environment and install the required libraries.
 
 ```sh
 python3 -m venv venv
@@ -87,6 +96,52 @@ pip3 install -r requirements.txt
 
 Note: using the circuitpython version as it is actively maintained and integrates better with modern raspberry pi's.
 
+### SPI
+
+Enable SPI on the raspberry pi. Interface options - SPI - enable.
+
+```sh
+sudo raspi-config
+```
+
+### clone the repository
+
+```sh
+git clone git@github.com:MaxiEurope/airsafemonitor.git
+cd airsafemonitor
+```
+
+## usage
+
+start the main script
+
+```sh
+python main.py
+```
+
+### calibration
+
+The MQ2 sensor needs to be calibrated in clean air, this will take 25 seconds (default), ensure the sensor is in a clean-air environment during this time.
+
+### LED indicators
+
+- green: safe (LPG < 50 ppm)
+- yellow: warning (50 ppm <= LPG < 100 ppm)
+- red: dangerous (100 <= LPG < 200 ppm)
+- red (blinking): very dangerous (LPG >= 200 ppm)
+
 ## testing
 
-you can run the testing scripts in the `/tests` directory to test the functionality of the modules (DHT11, MQ2, LEDs)
+Each component can be testing using the scripts in the `/tests` directory.
+
+```sh
+python tests/dht11.py
+python tests/mq2.py
+python tests/led.py
+```
+
+## notes
+
+- ensure the voltage divider circuit is correctly set up to avoid damaging the raspberry pi GPIO pins
+- the DHT11 sensor has a 2 second minimal interval for reading data
+- you can leave out the API part if you only want to monitor the data locally
